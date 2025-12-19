@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>AgriVerse – Digital Twin Village</title>
+<style>
+  body { margin: 0; overflow: hidden; background:#000; }
+  #info {
+    position:absolute;
+    top:15px; left:15px;
+    padding:10px 14px;
+    background:rgba(0,0,0,0.7);
+    color:#fff;
+    font-family:Arial;
+    border-radius:6px;
+  }
+</style>
+</head>
+<body>
+
+<div id="info">🟢 AgriVerse Village Loaded</div>
+
+<!-- THREE.JS -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/GLTFLoader.js"></script>
+
+<script>
+/* ---------------- SCENE ---------------- */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb);
+
+/* ---------------- CAMERA ---------------- */
+const camera = new THREE.PerspectiveCamera(
+  60, window.innerWidth / window.innerHeight, 0.1, 1000
+);
+camera.position.set(40, 30, 40);
+
+/* ---------------- RENDERER ---------------- */
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.outputEncoding = THREE.sRGBEncoding;
+document.body.appendChild(renderer.domElement);
+
+/* ---------------- CONTROLS ---------------- */
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 0, 0);
+
+/* ---------------- LIGHTS ---------------- */
+scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+const sun = new THREE.DirectionalLight(0xffffff, 1);
+sun.position.set(50, 60, 30);
+scene.add(sun);
+
+/* ---------------- GROUND ---------------- */
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(200, 200),
+  new THREE.MeshStandardMaterial({ color: 0x4caf50 })
+);
+ground.rotation.x = -Math.PI / 2;
+scene.add(ground);
+
+/* ---------------- LOADER ---------------- */
+const loader = new THREE.GLTFLoader();
+
+function loadModel(path, position, scale = 1, rotationY = 0) {
+  loader.load(
+    path,
+    gltf => {
+      const model = gltf.scene;
+      model.position.set(...position);
+      model.scale.set(scale, scale, scale);
+      model.rotation.y = rotationY;
+      scene.add(model);
+      console.log("Loaded:", path);
+    },
+    undefined,
+    error => console.error("Error loading", path, error)
+  );
+}
+
+/* ---------------- VILLAGE SETUP ---------------- */
+
+// FARM HOUSE
+loadModel("models/Farm house.glb", [-15, 0, 0], 2);
+
+// FARM LAND
+loadModel("models/Farm.glb", [20, 0, 0], 2);
+
+// FERTILE SOIL
+loadModel("models/Fertile soil.glb", [20, 0, -12], 2);
+
+// CROPS
+loadModel("models/Crops.glb", [20, 0, -25], 2);
+
+// TRACTOR
+loadModel("models/Tractor.glb", [5, 0, -10], 1.5, Math.PI/2);
+
+// FARMER
+loadModel("models/Farmer.glb", [0, 0, 5], 1.5);
+
+// COWS
+loadModel("models/Cow.glb", [-5, 0, -5], 1.2);
+loadModel("models/Cow.glb", [-8, 0, -8], 1.2);
+
+/* ---------------- ANIMATE ---------------- */
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+/* ---------------- RESIZE ---------------- */
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+
+</body>
+</html>
